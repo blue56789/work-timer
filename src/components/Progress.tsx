@@ -32,6 +32,11 @@ export default function Progress({
     const interval = setInterval(() => {
       const nowMs = Date.now();
       const now = nowMs - (nowMs % 1000);
+      if (now < start) {
+        setProgress({ per: 0, timeLeft: duration });
+        clearInterval(interval);
+        return;
+      }
       const timeLeft = end - now;
       if (start == 0 || timeLeft <= 0) {
         setProgress({ per: 100, timeLeft: 0 });
