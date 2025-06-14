@@ -1,9 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getMs, getTime } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 interface SavedTime {
   input: string;
+  value: number;
 }
 type TimeType = "start" | "duration";
 
@@ -15,21 +17,43 @@ function getSavedTime(type: TimeType) {
   if (saved?.input != "") return saved;
   return null;
 }
+function getStartTime() {
+  const start = getSavedTime("start");
+  const duration = getSavedTime("duration");
+  if (!start || !duration) return "";
+  if (start.value + duration.value < Date.now()) return "";
+  return start.input;
+}
 
-export default function TimeInput() {
-  const [startInput, setStartInput] = useState(
-    getSavedTime("start")?.input || ""
-  );
+export default function TimeInput({
+  setStart,
+  setDuration,
+}: {
+  setStart: (v: number) => void;
+  setDuration: (v: number) => void;
+}) {
+  const [startInput, setStartInput] = useState(getStartTime());
   const [durationInput, setDurationInput] = useState(
     getSavedTime("duration")?.input || "09:00"
   );
 
   useEffect(() => {
-    saveTime("start", { input: startInput });
-  }, [startInput]);
+    const val =
+      startInput == "" ? 0 : getTime(...(startInput.split(":") as []));
+    saveTime("start", {
+      input: startInput,
+      value: val,
+    });
+    setStart(val);
+  }, [startInput, setStart]);
   useEffect(() => {
-    saveTime("duration", { input: durationInput });
-  }, [durationInput]);
+    const val = getMs(...(durationInput.split(":") as []));
+    saveTime("duration", {
+      input: durationInput,
+      value: val,
+    });
+    setDuration(val);
+  }, [durationInput, setDuration]);
 
   return (
     <div className="flex gap-8">
