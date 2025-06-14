@@ -14,3 +14,7 @@ export function getTime(h = 0, m = 0, s = 0) {
 export function getMs(h = 0, m = 0, s = 0) {
   return (h * 3600 + m * 60 + s) * 1000;
 }
+
+export function get00(n: number) {
+  return n.toString().padStart(2, "0");
+}
