@@ -1,3 +1,4 @@
+import CircularProgress from "@/components/progress-09";
 import { get00 } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -38,9 +39,19 @@ export default function Progress({
     }, 1000);
     return () => clearInterval(interval);
   }, [start, duration]);
+
   return (
-    <>
-      {progress.per.toFixed(2)}, {getTimeLeft(progress.timeLeft / 1000)}
-    </>
+    <CircularProgress
+      value={progress.per}
+      size={240}
+      strokeWidth={16}
+      showLabel
+      renderLabel={(p) => (
+        <div className="flex flex-col gap-1 justify-center items-center">
+          <div className="font-bold text-2xl">{p.toFixed(2)}%</div>
+          <div>{getTimeLeft(progress.timeLeft / 1000)}</div>
+        </div>
+      )}
+    />
   );
 }
