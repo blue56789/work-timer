@@ -57,7 +57,7 @@ export default function TimeInput({
 
   return (
     <div className="flex gap-8">
-      <Label className="flex flex-col gap-2">
+      <Label className="flex flex-col gap-2 font-semibold">
         Start Time
         <Input
           type="time"
@@ -65,7 +65,7 @@ export default function TimeInput({
           onChange={(e) => setStartInput(e.target.value)}
         />
       </Label>
-      <Label className="flex flex-col gap-2">
+      <Label className="flex flex-col gap-2 font-semibold">
         Duration
         <Input
           type="time"
