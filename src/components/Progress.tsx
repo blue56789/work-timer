@@ -30,12 +30,15 @@ export default function Progress({
     const end = start + duration;
     const delta = end - start;
     const interval = setInterval(() => {
-      if (start == 0) {
+      const nowMs = Date.now();
+      const now = nowMs - (nowMs % 1000);
+      const timeLeft = end - now;
+      if (start == 0 || timeLeft <= 0) {
+        setProgress({ per: 100, timeLeft: 0 });
         clearInterval(interval);
         return;
       }
-      const now = Date.now();
-      setProgress({ per: ((now - start) / delta) * 100, timeLeft: end - now });
+      setProgress({ per: ((now - start) / delta) * 100, timeLeft: timeLeft });
     }, 1000);
     return () => clearInterval(interval);
   }, [start, duration]);
@@ -48,7 +51,9 @@ export default function Progress({
       showLabel
       renderLabel={(p) => (
         <div className="flex flex-col gap-1 justify-center items-center">
-          <div className="font-bold text-2xl">{p.toFixed(2)}%</div>
+          <div className="font-bold text-2xl">
+            {(Math.floor(p * 100) / 100).toFixed(2)}%
+          </div>
           <div>{getTimeLeft(progress.timeLeft / 1000)}</div>
         </div>
       )}
