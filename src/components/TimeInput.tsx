@@ -1,10 +1,10 @@
-import { Input } from "@/components/ui/input";
+import NumberInput from "@/components/NumberInput";
 import { Label } from "@/components/ui/label";
 import { getMs, getTime } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 interface SavedTime {
-  input: string;
+  input?: { hh: number; mm: number };
   value: number;
 }
 type TimeType = "start" | "duration";
@@ -14,14 +14,14 @@ function saveTime(type: TimeType, time: SavedTime) {
 }
 function getSavedTime(type: TimeType) {
   const saved = JSON.parse(`${localStorage.getItem(type)}`) as SavedTime;
-  if (saved?.input != "") return saved;
-  return null;
+  if (!saved) return null;
+  return saved;
 }
 function getStartTime() {
   const start = getSavedTime("start");
   const duration = getSavedTime("duration");
-  if (!start || !duration) return "";
-  if (start.value + duration.value < Date.now()) return "";
+  if (!start || !duration) return undefined;
+  if (start.value + duration.value < Date.now()) return undefined;
   return start.input;
 }
 
@@ -32,46 +32,57 @@ export default function TimeInput({
   setStart: (v: number) => void;
   setDuration: (v: number) => void;
 }) {
-  const [startInput, setStartInput] = useState(getStartTime());
-  const [durationInput, setDurationInput] = useState(
-    getSavedTime("duration")?.input || "09:00"
+  const [startH, setStartH] = useState<number | undefined>(getStartTime()?.hh);
+  const [startM, setStartM] = useState<number | undefined>(getStartTime()?.mm);
+  const [durationH, setDurationH] = useState<number | undefined>(
+    getSavedTime("duration")?.input?.hh || 9
+  );
+  const [durationM, setDurationM] = useState<number | undefined>(
+    getSavedTime("duration")?.input?.mm || 0
   );
 
   useEffect(() => {
-    const val =
-      startInput == "" ? 0 : getTime(...(startInput.split(":") as []));
+    if (startH == undefined || startM == undefined) {
+      saveTime("start", { value: 0 });
+      return;
+    }
+    const val = getTime(startH, startM);
     saveTime("start", {
-      input: startInput,
+      input: { hh: startH, mm: startM },
       value: val,
     });
     setStart(val);
-  }, [startInput, setStart]);
+  }, [startH, startM, setStart]);
   useEffect(() => {
-    const val = getMs(...(durationInput.split(":") as []));
+    if (durationH == undefined || durationM == undefined) {
+      saveTime("duration", { value: 0 });
+      return;
+    }
+    const val = getMs(durationH, durationM);
     saveTime("duration", {
-      input: durationInput,
+      input: { hh: durationH, mm: durationM },
       value: val,
     });
     setDuration(val);
-  }, [durationInput, setDuration]);
+  }, [durationH, durationM, setDuration]);
 
   return (
     <div className="flex gap-8">
       <Label className="flex flex-col gap-2 font-semibold">
         Start Time
-        <Input
-          type="time"
-          value={startInput}
-          onChange={(e) => setStartInput(e.target.value)}
-        />
+        <div className="flex items-center gap-2">
+          <NumberInput num={startH} setNum={setStartH} max={23} />
+          <span>:</span>
+          <NumberInput num={startM} setNum={setStartM} max={59} />
+        </div>
       </Label>
       <Label className="flex flex-col gap-2 font-semibold">
         Duration
-        <Input
-          type="time"
-          value={durationInput}
-          onChange={(e) => setDurationInput(e.target.value)}
-        />
+        <div className="flex items-center gap-2">
+          <NumberInput num={durationH} setNum={setDurationH} max={99} />
+          <span>:</span>
+          <NumberInput num={durationM} setNum={setDurationM} max={59} />
+        </div>
       </Label>
     </div>
   );
